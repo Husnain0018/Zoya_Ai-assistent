@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  body {
+    @apply bg-black text-white antialiased overflow-hidden;
+  }
+}
+
+@layer utilities {
+  .glow-text {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  }
+  
+  .glow-box {
+    box-shadow: 0 0 50px rgba(255, 255, 255, 0.1);
+  }
+}
+
