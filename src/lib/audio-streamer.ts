@@ -19,12 +19,17 @@ export class AudioStreamer {
         sampleRate: this.sampleRateIn,
       });
 
+      if (this.audioContext.state === 'suspended') {
+        await this.audioContext.resume();
+      }
+
       this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
       this.source = this.audioContext.createMediaStreamSource(this.mediaStream);
       
       // Using ScriptProcessorNode for simplicity in this environment, 
       // though AudioWorklet is preferred in modern apps.
-      this.processor = this.audioContext.createScriptProcessor(4096, 1, 1);
+      // Reduced buffer size for lower latency on mobile.
+      this.processor = this.audioContext.createScriptProcessor(2048, 1, 1);
 
       this.processor.onaudioprocess = (e) => {
         const inputData = e.inputBuffer.getChannelData(0);
@@ -56,11 +61,16 @@ export class AudioStreamer {
       this.mediaStream.getTracks().forEach(track => track.stop());
       this.mediaStream = null;
     }
+    if (this.gainNode) {
+      this.gainNode.disconnect();
+      this.gainNode = null;
+    }
     if (this.audioContext) {
       this.audioContext.close();
       this.audioContext = null;
     }
     this.isPlaying = false;
+    this.nextStartTime = 0;
   }
 
   async playAudioChunk(base64Data: string) {
@@ -90,6 +100,14 @@ export class AudioStreamer {
       this.gainNode = this.audioContext.createGain();
       this.gainNode.connect(this.audioContext.destination);
     }
+    
+    // Safety check: ensure gainNode belongs to the same context
+    if (this.gainNode.context !== this.audioContext) {
+      this.gainNode.disconnect();
+      this.gainNode = this.audioContext.createGain();
+      this.gainNode.connect(this.audioContext.destination);
+    }
+
     source.connect(this.gainNode);
 
     const startTime = Math.max(this.nextStartTime, this.audioContext.currentTime);

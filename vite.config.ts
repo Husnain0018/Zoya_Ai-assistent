@@ -9,12 +9,18 @@ export default defineConfig(({mode}) => {
     plugins: [react(), tailwindcss()],
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+      global: 'window.global',
+      globalThis: 'window.global',
+      process: 'window.process',
     },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
         'node-fetch': path.resolve(__dirname, 'node-fetch-mock.js'),
         'formdata-polyfill': path.resolve(__dirname, 'formdata-polyfill-mock.js'),
+        'formdata-polyfill/esm.min.js': path.resolve(__dirname, 'formdata-polyfill-mock.js'),
+        'formdata-polyfill/FormData.js': path.resolve(__dirname, 'formdata-polyfill-mock.js'),
+        'formdata-polyfill/formdata.min.js': path.resolve(__dirname, 'formdata-polyfill-mock.js'),
         'ws': path.resolve(__dirname, 'ws-mock.js'),
       },
     },

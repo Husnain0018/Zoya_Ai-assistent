@@ -4,6 +4,34 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Google AI Studio App</title>
+    <script>
+      (function() {
+        const proxy = new Proxy(window, {
+          get(target, prop) {
+            if (prop === 'global' || prop === 'globalThis') return window.global;
+            const value = target[prop];
+            return typeof value === 'function' ? value.bind(target) : value;
+          },
+          set(target, prop, value) {
+            if (prop === 'fetch') return true;
+            try {
+              target[prop] = value;
+            } catch (e) {
+              // Ignore errors setting read-only properties
+            }
+            return true;
+          }
+        });
+        window.global = proxy;
+        if (typeof process === 'undefined') {
+          window.process = { 
+            env: { NODE_ENV: 'development' },
+            nextTick: function(cb) { setTimeout(cb, 0); },
+            browser: true
+          };
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
